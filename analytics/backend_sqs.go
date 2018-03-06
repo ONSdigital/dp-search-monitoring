@@ -6,12 +6,12 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-  "github.com/aws/aws-sdk-go-v2/aws/external"
+	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/sqsiface"
 
-  "github.com/ONSdigital/go-ns/log"
-  "github.com/ONSdigital/dp-search-monitoring/config"
+	"github.com/ONSdigital/go-ns/log"
+	"github.com/ONSdigital/dp-search-monitoring/config"
 )
 
 // Queue provides the ability to handle SQS messages.
@@ -25,12 +25,12 @@ type Message struct {
 	Created string `json:"created"`
 	Url   string `json:"url"`
 	Term  string `json:"term"`
-  ListType string `json:listType`
-  GaID string `json:gaID`
+	ListType string `json:listType`
+	GaID string `json:gaID`
 	GID string `json:gID`
-  PageIndex int `json:pageIndex`
-  LinkIndex int `json:linkIndex`
-  PageSize int `json:pageSize`
+	PageIndex int `json:pageIndex`
+	LinkIndex int `json:linkIndex`
+	PageSize int `json:pageSize`
 	receiptHandle string `json:receiptHandle`
 }
 
@@ -45,19 +45,19 @@ func(m *Message) ReceiptHandle() string {
 // Returns a Queue struct for accessing an SQS Queue at a
 // specific URL, defined by ANALYTICS_SQS_URL
 func GetQueue() (Queue, error) {
-  var q Queue
+	var q Queue
 
-  cfg, err := external.LoadDefaultAWSConfig()
-  if err != nil {
-    return q, err
-  }
+	cfg, err := external.LoadDefaultAWSConfig()
+	if err != nil {
+	  return q, err
+	}
 
-  q = Queue{
-    Client: sqs.New(cfg),
-    URL:    config.SQSAnalyticsURL,
-  }
+	q = Queue{
+	  Client: sqs.New(cfg),
+	  URL:    config.SQSAnalyticsURL,
+	}
 
-  return q, nil
+	return q, nil
 }
 
 // GetAttributes returns attributes for the desired SQS queue
@@ -105,8 +105,8 @@ func (q *Queue) GetMessages(waitTimeout int64, maxNumberOfMessages int64) ([]Mes
 			return nil, fmt.Errorf("failed to unmarshal message, %v", err)
 		}
 
-    // Add the ReceiptHandle
-    parsedMsg.SetReceiptHandle(*msg.ReceiptHandle)
+	  // Add the ReceiptHandle
+	  parsedMsg.SetReceiptHandle(*msg.ReceiptHandle)
 		msgs[i] = parsedMsg
 	}
 

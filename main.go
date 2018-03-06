@@ -90,9 +90,9 @@ func syncHandler(w http.ResponseWriter, r *http.Request) {
   // Set 200 status OK
   w.WriteHeader(http.StatusOK)
   return
-}
+  }
 
-func main() {
+  func main() {
   if v := os.Getenv("ANALYTICS_SQS_URL"); len(v) > 0 {
     config.SQSAnalyticsURL = v
   }
