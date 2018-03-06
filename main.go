@@ -5,7 +5,6 @@ import (
   "os"
   "strconv"
   "encoding/json"
-  "fmt"
 
   "github.com/jasonlvhit/gocron"
 
@@ -116,8 +115,12 @@ func main() {
   s.Every(1).Day().At("00:00").Do(mongo.ImportSQSMessages)
 
   _, time := gocron.NextRun()
-  fmt.Println(time)
+  log.Debug("Cron job scheduled", log.Data{
+    "NextRun:":   time,
+  })
   s.Start()
+
+  // <- s.Start() // To start scheduler and block
 
   // Init the server
   mux := http.NewServeMux()
@@ -127,5 +130,8 @@ func main() {
   mux.HandleFunc("/attributes", attributesHandler)
   mux.HandleFunc("/sync", syncHandler)
 
-  http.ListenAndServe(config.BindAddr, mux)
+  if err := http.ListenAndServe(config.BindAddr, mux); err != nil {
+    log.Error(err, nil)
+    os.Exit(2)
+  }
 }

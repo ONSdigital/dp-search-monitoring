@@ -34,7 +34,7 @@ func ImportSQSMessages() error {
 
   var count int64
 
-  for ok := true; ok; ok = (len(msgs) > 0) {
+  for ok := (len(msgs) > 0); ok; {
     // Loop through the messages and insert into mongo
     receiptHandles := make([]string, len(msgs))
     for i := range msgs {
@@ -52,6 +52,7 @@ func ImportSQSMessages() error {
     }
     log.Debug("Insert progress:", log.Data{
       "total": count,
+      "messageSize": len(msgs),
     })
 
     // Batch delete messages
@@ -62,7 +63,12 @@ func ImportSQSMessages() error {
     if err != nil {
       return err
     }
+    ok = (len(msgs) > 0)
   }
+
+  log.Debug("Insert complete", log.Data{
+    "total": count,
+  })
 
   return nil
 }

@@ -27,6 +27,7 @@ type Message struct {
 	Term  string `json:"term"`
   ListType string `json:listType`
   GaID string `json:gaID`
+	GID string `json:gID`
   PageIndex int `json:pageIndex`
   LinkIndex int `json:linkIndex`
   PageSize int `json:pageSize`
@@ -96,11 +97,6 @@ func (q *Queue) GetMessages(waitTimeout int64, maxNumberOfMessages int64) ([]Mes
 	if err != nil {
 		return nil, fmt.Errorf("failed to get messages, %v", err)
 	}
-
-  log.Debug("Got message response", log.Data{
-    "resp": resp,
-		"size": len(resp.Messages),
-  })
 
 	msgs := make([]Message, len(resp.Messages))
 	for i, msg := range resp.Messages {
