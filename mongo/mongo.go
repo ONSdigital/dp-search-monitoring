@@ -55,7 +55,7 @@ func ImportSQSMessages() error {
       "messageSize": len(msgs),
     })
 
-    // Batch delete messages
+    // Batch delete processed messages
     q.BatchDeleteMessages(receiptHandles)
 
     // Check for more messages

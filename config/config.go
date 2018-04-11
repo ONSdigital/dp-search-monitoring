@@ -1,7 +1,5 @@
 package config
 
-var BindAddr = ":8085"
-
 var SQSAnalyticsURL = ""
 
 var SQSWaitTimeout int64 = 20
