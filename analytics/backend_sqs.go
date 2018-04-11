@@ -72,7 +72,7 @@ func (q *Queue) GetAttributes() (*sqs.GetQueueAttributesOutput, error) {
 	resp, err := req.Send()
 
 	log.Debug("Got attributes response", log.Data{
-		"resp": resp,
+		"response": resp,
 	})
 
 	if err != nil {
@@ -89,11 +89,14 @@ func (q *Queue) GetMessages(waitTimeout int64, maxNumberOfMessages int64) ([]Mes
 		QueueUrl: aws.String(q.URL),
 		MaxNumberOfMessages: &maxNumberOfMessages,
 	}
+
 	if waitTimeout > 0 {
 		params.WaitTimeSeconds = aws.Int64(waitTimeout)
 	}
+
 	req := q.Client.ReceiveMessageRequest(&params)
 	resp, err := req.Send()
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to get messages, %v", err)
 	}
@@ -127,7 +130,7 @@ func (q *Queue) DeleteMessage(receiptHandle string) (*sqs.DeleteMessageOutput, e
 	}
 
 	log.Debug("Got delete response", log.Data{
-		"resp": resp,
+		"response": resp,
 	})
 
 	return resp, err
@@ -156,7 +159,7 @@ func (q *Queue) BatchDeleteMessages(receiptHandles []string) (*sqs.DeleteMessage
 	}
 
 	log.Debug("Got batch delete response", log.Data{
-		"resp": resp,
+		"response": resp,
 	})
 
 	return resp, err

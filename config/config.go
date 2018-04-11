@@ -8,6 +8,8 @@ var MongoDBUrl = ""
 
 var MongoDBDatabase = "local"
 
-var MongoDBCollection = "searchstats_test"
+var MongoDBCollection = "searchstats"
 
 var MaxSQSMessages int64 = 10
+
+var RunAllOnStartup = true
