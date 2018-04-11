@@ -29,10 +29,10 @@ func main() {
     config.SQSWaitTimeout = int64(a)
   }
 
-  // Setup cron job to poll for SQS messages and insert into mongoDB
+  // // Setup cron job to poll for SQS messages and insert into mongoDB
   s := gocron.NewScheduler()
-  s.Every(1).Day().At("00:00").Do(mongo.ImportSQSMessages)
-
+  s.Every(1).Day().At("00:00").Do(mongo.Import)
+  
   _, time := gocron.NextRun()
   log.Debug("Cron job scheduled", log.Data{
     "NextRun:":   time,

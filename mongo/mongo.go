@@ -8,7 +8,17 @@ import (
   "github.com/ONSdigital/dp-search-monitoring/analytics"
 )
 
-func ImportSQSMessages() error {
+func Import() {
+  // Wraps ImportSQSMessages and logs any errors raised
+  log.Debug("Starting import.", nil)
+  err := importSQSMessages()
+  if err != nil {
+    log.Error(err, nil)
+  }
+  log.Debug("Import complete.", nil)
+}
+
+func importSQSMessages() error {
   // Reads messages from SQS queue and impors them into mongoDB
 
   // Get SQS client
@@ -17,6 +27,7 @@ func ImportSQSMessages() error {
     return err
   }
 
+  // Create mongo client
   session, err := mgo.Dial(config.MongoDBUrl)
   if err != nil {
     return err
