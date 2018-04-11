@@ -14,8 +14,16 @@ import (
 	"github.com/ONSdigital/dp-search-monitoring/config"
 )
 
+// SQSReader defines a SQS Reader Interface
+type SQSReader interface {
+	GetAttributes() (*sqs.GetQueueAttributesOutput, error)
+	GetMessages(waitTimeout int64, maxNumberOfMessages int64) ([]Message, error)
+	DeleteMessage(receiptHandle string) (*sqs.DeleteMessageOutput, error)
+	BatchDeleteMessages(receiptHandles []string) (*sqs.DeleteMessageBatchOutput, error)
+}
+
 // Queue provides the ability to handle SQS messages.
-type Queue struct {
+type SQSReaderImpl struct {
 	Client sqsiface.SQSAPI
 	URL    string
 }
@@ -44,24 +52,24 @@ func(m *Message) ReceiptHandle() string {
 
 // Returns a Queue struct for accessing an SQS Queue at a
 // specific URL, defined by ANALYTICS_SQS_URL
-func GetQueue() (Queue, error) {
-	var q Queue
+func GetReader() (*SQSReaderImpl, error) {
+	var q SQSReaderImpl
 
 	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {
-	  return q, err
+	  return nil, err
 	}
 
-	q = Queue{
+	q = SQSReaderImpl{
 	  Client: sqs.New(cfg),
 	  URL:    config.SQSAnalyticsURL,
 	}
 
-	return q, nil
+	return &q, nil
 }
 
 // GetAttributes returns attributes for the desired SQS queue
-func (q *Queue) GetAttributes() (*sqs.GetQueueAttributesOutput, error) {
+func (q *SQSReaderImpl) GetAttributes() (*sqs.GetQueueAttributesOutput, error) {
 	// Returns the attributes for the desired Queue
 	params := sqs.GetQueueAttributesInput{
 		QueueUrl: aws.String(q.URL),
@@ -84,7 +92,7 @@ func (q *Queue) GetAttributes() (*sqs.GetQueueAttributesOutput, error) {
 
 // GetMessages returns the parsed messages from SQS if any. If an error
 // occurs that error will be returned.
-func (q *Queue) GetMessages(waitTimeout int64, maxNumberOfMessages int64) ([]Message, error) {
+func (q *SQSReaderImpl) GetMessages(waitTimeout int64, maxNumberOfMessages int64) ([]Message, error) {
 	params := sqs.ReceiveMessageInput{
 		QueueUrl: aws.String(q.URL),
 		MaxNumberOfMessages: &maxNumberOfMessages,
@@ -116,7 +124,7 @@ func (q *Queue) GetMessages(waitTimeout int64, maxNumberOfMessages int64) ([]Mes
 	return msgs, nil
 }
 
-func (q *Queue) DeleteMessage(receiptHandle string) (*sqs.DeleteMessageOutput, error) {
+func (q *SQSReaderImpl) DeleteMessage(receiptHandle string) (*sqs.DeleteMessageOutput, error) {
 	params := sqs.DeleteMessageInput{
 		QueueUrl: aws.String(q.URL),
 		ReceiptHandle: aws.String(receiptHandle),
@@ -136,7 +144,7 @@ func (q *Queue) DeleteMessage(receiptHandle string) (*sqs.DeleteMessageOutput, e
 	return resp, err
 }
 
-func (q *Queue) BatchDeleteMessages(receiptHandles []string) (*sqs.DeleteMessageBatchOutput, error) {
+func (q *SQSReaderImpl) BatchDeleteMessages(receiptHandles []string) (*sqs.DeleteMessageBatchOutput, error) {
 	entries := make([]sqs.DeleteMessageBatchRequestEntry, len(receiptHandles))
 
 	for i, receiptHandle := range receiptHandles {

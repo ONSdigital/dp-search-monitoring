@@ -32,7 +32,6 @@ func main() {
   // // Setup cron job to poll for SQS messages and insert into mongoDB
   s := gocron.NewScheduler()
   s.Every(1).Day().At("00:00").Do(mongo.Import)
-  // s.Start() // To start scheduler and NOT block
 
   if config.RunAllOnStartup {
     s.RunAll()
@@ -43,5 +42,5 @@ func main() {
     "NextRun:":   time,
   })
 
-  <- s.Start() // To start scheduler and block
+  <- s.Start() // Start scheduler and block
 }
