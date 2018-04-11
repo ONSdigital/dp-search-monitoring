@@ -14,9 +14,13 @@ func TestGetMessages(t *testing.T) {
   }
 
   Convey("Given valid input parameters", t, func() {
-    q.GetMessages(20, 10)
+    messages, err := q.GetMessages(20, 10)
+
     So(len(q.calls.GetMessages), ShouldEqual, 1)
     So(q.calls.GetMessages[0].WaitTimeout, ShouldEqual, 20)
     So(q.calls.GetMessages[0].MaxNumberOfMessages, ShouldEqual, 10)
+
+    So(messages, ShouldBeNil)
+    So(err, ShouldNotBeNil)
   })
 }

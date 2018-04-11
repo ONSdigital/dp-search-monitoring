@@ -4,7 +4,7 @@ var SQSAnalyticsURL = ""
 
 var SQSWaitTimeout int64 = 20
 
-var MongoDBUrl = ""
+var MongoDBUrl = "localhost:27017"
 
 var MongoDBDatabase = "local"
 
