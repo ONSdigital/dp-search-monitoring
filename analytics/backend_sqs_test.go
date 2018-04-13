@@ -4,15 +4,14 @@ import (
   "testing"
 
   "github.com/aws/aws-sdk-go-v2/service/sqs/sqsiface"
-
-  . "github.com/smartystreets/goconvey/convey"
   "github.com/aws/aws-sdk-go-v2/service/sqs"
   "github.com/aws/aws-sdk-go-v2/aws"
+
+  . "github.com/smartystreets/goconvey/convey"
 )
 
 type mockedReceiveMsgs struct {
   sqsiface.SQSAPI
-  Resp sqs.ReceiveMessageOutput
 }
 
 func (m mockedReceiveMsgs) ReceiveMessageRequest(in *sqs.ReceiveMessageInput) sqs.ReceiveMessageRequest {
