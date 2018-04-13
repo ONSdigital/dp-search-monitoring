@@ -2,6 +2,7 @@ package analytics
 
 import (
   "testing"
+  "encoding/json"
 
   "github.com/aws/aws-sdk-go-v2/service/sqs/sqsiface"
   "github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -16,11 +17,28 @@ type mockedReceiveMsgs struct {
 
 func (m mockedReceiveMsgs) ReceiveMessageRequest(in *sqs.ReceiveMessageInput) sqs.ReceiveMessageRequest {
   // Only need to return mocked response output
-  json := `{"created":"Now","url":"/test/url","term":"test_term","listType":"test_list_type","gaID":"testgaID","gID":"testgID","pageIndex":0,"linkIndex":1,"pageSize":2}`
+  message := Message{
+    Created: "Now",
+    Url: "/test/url",
+    Term: "test_term",
+    ListType: "test_list_type",
+    GaID: "testgaID",
+    GID: "testgID",
+    PageIndex: 0,
+    LinkIndex: 1,
+    PageSize: 2,
+  }
+
+  body, err := json.Marshal(message)
+
+  if err != nil {
+    panic(err)
+  }
+
   output := sqs.ReceiveMessageOutput{
     Messages: []sqs.Message{
       {
-        Body: aws.String(json),
+        Body: aws.String(string(body)),
         ReceiptHandle: aws.String("testHandle"),
       },
     },
