@@ -1,26 +1,51 @@
 package analytics
 
 import (
-  "errors"
   "testing"
 
+  "github.com/aws/aws-sdk-go-v2/service/sqs/sqsiface"
+
   . "github.com/smartystreets/goconvey/convey"
+  "github.com/aws/aws-sdk-go-v2/service/sqs"
+  "github.com/aws/aws-sdk-go-v2/aws"
 )
 
-func TestGetMessages(t *testing.T) {
-  q := &SQSReaderMock{}
-  q.GetMessagesFunc = func(waitTimeout int64, maxNumberOfMessages int64) ([]Message, error) {
-    return nil, errors.New("Unable to get messages")
+type mockedReceiveMsgs struct {
+  sqsiface.SQSAPI
+  Resp sqs.ReceiveMessageOutput
+}
+
+func (m mockedReceiveMsgs) ReceiveMessageRequest(in *sqs.ReceiveMessageInput) sqs.ReceiveMessageRequest {
+  // Only need to return mocked response output
+  output := sqs.ReceiveMessageOutput{
+    Messages: []sqs.Message{
+      {
+        Body: aws.String(`{"created":"1","url":"test_url","term":"test","listType":"test","gaID":"testgaID","gID":"testgID","pageIndex":0,"linkIndex":0,"pageSize":0}`),
+        ReceiptHandle: aws.String("testHandle"),
+      },
+    },
+  }
+  return sqs.ReceiveMessageRequest{
+    Request: &aws.Request{
+      Data: &output,
+    },
+  }
+}
+
+func TestSQSReaderImpl_GetMessages(t *testing.T) {
+  client := mockedReceiveMsgs{}
+
+  q := SQSReaderImpl{
+    Client: client,
+    URL: "http://fake.url",
   }
 
+  messages, err := q.GetMessages(20, 10)
+
   Convey("Given valid input parameters", t, func() {
-    messages, err := q.GetMessages(20, 10)
-
-    So(len(q.calls.GetMessages), ShouldEqual, 1)
-    So(q.calls.GetMessages[0].WaitTimeout, ShouldEqual, 20)
-    So(q.calls.GetMessages[0].MaxNumberOfMessages, ShouldEqual, 10)
-
-    So(messages, ShouldBeNil)
-    So(err, ShouldNotBeNil)
+    So(q, ShouldNotBeNil)
+    So(messages, ShouldNotBeNil)
+    So(err, ShouldBeNil)
+    So(len(messages), ShouldEqual, 1)
   })
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/sqsiface"
 
-	"github.com/ONSdigital/go-ns/log"
 	"github.com/ONSdigital/dp-search-monitoring/config"
 )
 
@@ -81,10 +80,6 @@ func (q *SQSReaderImpl) GetAttributes() (*sqs.GetQueueAttributesOutput, error) {
 	req := q.Client.GetQueueAttributesRequest(&params)
 	resp, err := req.Send()
 
-	log.Debug("Got attributes response", log.Data{
-		"response": resp,
-	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -118,8 +113,8 @@ func (q *SQSReaderImpl) GetMessages(waitTimeout int64, maxNumberOfMessages int64
 			return nil, fmt.Errorf("failed to unmarshal message, %v", err)
 		}
 
-	  // Add the ReceiptHandle
-	  parsedMsg.SetReceiptHandle(*msg.ReceiptHandle)
+	  	// Add the ReceiptHandle
+	  	parsedMsg.SetReceiptHandle(*msg.ReceiptHandle)
 		msgs[i] = parsedMsg
 	}
 
@@ -127,50 +122,50 @@ func (q *SQSReaderImpl) GetMessages(waitTimeout int64, maxNumberOfMessages int64
 }
 
 func (q *SQSReaderImpl) DeleteMessage(receiptHandle string) (*sqs.DeleteMessageOutput, error) {
-	params := sqs.DeleteMessageInput{
-		QueueUrl: aws.String(q.URL),
-		ReceiptHandle: aws.String(receiptHandle),
+	if config.SQSDeleteEnabled {
+		params := sqs.DeleteMessageInput{
+			QueueUrl: aws.String(q.URL),
+			ReceiptHandle: aws.String(receiptHandle),
+		}
+
+		req := q.Client.DeleteMessageRequest(&params)
+		resp, err := req.Send()
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to delete message with receipt %s, %v", receiptHandle, err)
+		}
+
+		return resp, err
+	} else {
+		return nil, fmt.Errorf("Deletion of SQS messages is currently disabled")
 	}
-
-	req := q.Client.DeleteMessageRequest(&params)
-	resp, err := req.Send()
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to delete message with receipt %s, %v", receiptHandle, err)
-	}
-
-	log.Debug("Got delete response", log.Data{
-		"response": resp,
-	})
-
-	return resp, err
 }
 
 func (q *SQSReaderImpl) BatchDeleteMessages(receiptHandles []string) (*sqs.DeleteMessageBatchOutput, error) {
-	entries := make([]sqs.DeleteMessageBatchRequestEntry, len(receiptHandles))
+	if config.SQSDeleteEnabled {
+		entries := make([]sqs.DeleteMessageBatchRequestEntry, len(receiptHandles))
 
-	for i, receiptHandle := range receiptHandles {
-		entries[i] = sqs.DeleteMessageBatchRequestEntry{
-			Id: aws.String(strconv.Itoa(i)),
-			ReceiptHandle: aws.String(receiptHandle),
+		for i, receiptHandle := range receiptHandles {
+			entries[i] = sqs.DeleteMessageBatchRequestEntry{
+				Id: aws.String(strconv.Itoa(i)),
+				ReceiptHandle: aws.String(receiptHandle),
+			}
 		}
+
+		params := sqs.DeleteMessageBatchInput{
+			Entries: entries,
+			QueueUrl: aws.String(q.URL),
+		}
+
+		req := q.Client.DeleteMessageBatchRequest(&params)
+		resp, err := req.Send()
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to batch delete messages with receipt, %v", err)
+		}
+
+		return resp, err
+	} else {
+		return nil, fmt.Errorf("Deletion of SQS messages is currently disabled")
 	}
-
-	params := sqs.DeleteMessageBatchInput{
-		Entries: entries,
-		QueueUrl: aws.String(q.URL),
-	}
-
-	req := q.Client.DeleteMessageBatchRequest(&params)
-	resp, err := req.Send()
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to batch delete messages with receipt, %v", err)
-	}
-
-	log.Debug("Got batch delete response", log.Data{
-		"response": resp,
-	})
-
-	return resp, err
 }
