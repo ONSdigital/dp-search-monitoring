@@ -16,10 +16,11 @@ type mockedReceiveMsgs struct {
 
 func (m mockedReceiveMsgs) ReceiveMessageRequest(in *sqs.ReceiveMessageInput) sqs.ReceiveMessageRequest {
   // Only need to return mocked response output
+  json := `{"created":"Now","url":"/test/url","term":"test_term","listType":"test_list_type","gaID":"testgaID","gID":"testgID","pageIndex":0,"linkIndex":1,"pageSize":2}`
   output := sqs.ReceiveMessageOutput{
     Messages: []sqs.Message{
       {
-        Body: aws.String(`{"created":"Now","url":"/test/url","term":"test_term","listType":"test_list_type","gaID":"testgaID","gID":"testgID","pageIndex":0,"linkIndex":1,"pageSize":2}`),
+        Body: aws.String(json),
         ReceiptHandle: aws.String("testHandle"),
       },
     },
@@ -57,5 +58,6 @@ func TestSQSReaderImpl_GetMessages(t *testing.T) {
     So(message.PageIndex, ShouldEqual, 0)
     So(message.LinkIndex, ShouldEqual, 1)
     So(message.PageSize, ShouldEqual, 2)
+    So(message.ReceiptHandle(), ShouldEqual, "testHandle")
   })
 }
