@@ -42,8 +42,9 @@ func main() {
 
     if err != nil {
       log.Debug("Unable to convert 'RUN_ON_STARTUP' val to bool", log.Data{
-        val: val,
+        "Value": val,
       })
+      os.Exit(1)
     }
     config.RunAllOnStartup = val
   }
@@ -66,6 +67,11 @@ func main() {
   case "HOURS":
     s.Every(1).Hour().Do(mongo.Import)
       break
+  default:
+    log.Debug("Unknown 'TIME_UNIT'.", log.Data{
+      "TimeUnit": config.TimeUnit,
+    })
+    os.Exit(1)
   }
 
   if config.RunAllOnStartup {
