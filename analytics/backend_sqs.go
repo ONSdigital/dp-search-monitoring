@@ -25,6 +25,7 @@ type SQSReader interface {
 
 // Queue provides the ability to handle SQS messages.
 type SQSReaderImpl struct {
+	SQSReader
 	Client sqsiface.SQSAPI
 	URL    string
 }
@@ -137,7 +138,7 @@ func (q *SQSReaderImpl) DeleteMessage(receiptHandle string) (*sqs.DeleteMessageO
 
 		return resp, err
 	} else {
-		return nil, fmt.Errorf("Deletion of SQS messages is currently disabled")
+		return nil, fmt.Errorf("deletion of SQS messages is currently disabled")
 	}
 }
 
@@ -166,6 +167,6 @@ func (q *SQSReaderImpl) BatchDeleteMessages(receiptHandles []string) (*sqs.Delet
 
 		return resp, err
 	} else {
-		return nil, fmt.Errorf("Deletion of SQS messages is currently disabled")
+		return nil, fmt.Errorf("deletion of SQS messages is currently disabled")
 	}
 }
