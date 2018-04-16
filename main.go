@@ -16,10 +16,6 @@ func main() {
     config.SQSAnalyticsURL = v
   }
 
-  if v := os.Getenv("MONGODB_URL"); len(v) > 0 {
-    config.MongoDBUrl = v
-  }
-
   if v := os.Getenv("SQS_WAIT_TIMEOUT"); len(v) > 0 {
     a, _ := strconv.Atoi(v)
     if a < 0 || a > 20 {
@@ -29,9 +25,48 @@ func main() {
     config.SQSWaitTimeout = int64(a)
   }
 
+  if v := os.Getenv("MONGODB_URL"); len(v) > 0 {
+    config.MongoDBUrl = v
+  }
+
+  if v := os.Getenv("MONGO_DB"); len(v) > 0 {
+    config.MongoDBDatabase = v
+  }
+
+  if v := os.Getenv("MONGO_COLLECTION"); len(v) > 0 {
+    config.MongoDBCollection = v
+  }
+
+  if v := os.Getenv("RUN_ON_STARTUP"); len(v) > 0 {
+    val, err := strconv.ParseBool(v)
+
+    if err != nil {
+      log.Debug("Unable to convert 'RUN_ON_STARTUP' val to bool", log.Data{
+        val: val,
+      })
+    }
+    config.RunAllOnStartup = val
+  }
+
+  if v := os.Getenv("TIME_UNIT"); len(v) > 0 {
+    config.TimeUnit = v
+  }
+
+  if v := os.Getenv("AT_TIME"); len(v) > 0 {
+    config.AtTime = v
+  }
+
   // // Setup cron job to poll for SQS messages and insert into mongoDB
   s := gocron.NewScheduler()
-  s.Every(1).Day().At("00:00").Do(mongo.Import)
+
+  switch config.TimeUnit {
+  case "DAYS":
+    s.Every(1).Day().At(config.AtTime).Do(mongo.Import)
+    break
+  case "HOURS":
+    s.Every(1).Hour().Do(mongo.Import)
+      break
+  }
 
   if config.RunAllOnStartup {
     s.RunAll()

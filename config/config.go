@@ -15,3 +15,7 @@ var MongoDBDatabase = "local"
 var MongoDBCollection = "searchstats"
 
 var RunAllOnStartup = true
+
+var TimeUnit = "DAYS"
+
+var AtTime = "00:00"
