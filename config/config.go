@@ -6,7 +6,7 @@ var SQSWaitTimeout int64 = 20
 
 var MaxSQSMessages int64 = 10
 
-var SQSDeleteEnabled = false
+var SQSDeleteEnabled = true
 
 var MongoDBUrl = "localhost:27017"
 

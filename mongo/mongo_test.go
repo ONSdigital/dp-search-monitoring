@@ -45,3 +45,21 @@ func TestMongoClientMock_Insert(t *testing.T) {
 		So(err, ShouldBeNil)
 	})
 }
+
+func TestPullMessages(t *testing.T) {
+	c := &MongoClientMock{}
+	c.InsertFunc = func(message *analytics.Message) error {
+		return nil
+	}
+
+	q := GetSQSClient()
+
+	count, err := PullMessages(q, c)
+
+	Convey("Given a valid SQSReader and MongoClient", t, func() {
+		So(len(c.calls.Insert), ShouldEqual, 1)
+
+		So(count, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+	})
+}

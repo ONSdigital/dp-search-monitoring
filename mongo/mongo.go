@@ -11,7 +11,6 @@ import (
 //go:generate moq -pkg mongo -out mongo_mocks.go . MongoClient
 
 type MongoClient interface {
-  GetClient() *mgo.Session
   Insert(message *analytics.Message) error
 }
 
@@ -26,10 +25,6 @@ func NewMongoClient() (*MongoClientImpl, error) {
     return nil, err
   }
   return &MongoClientImpl{session}, nil
-}
-
-func (client *MongoClientImpl) GetClient() *mgo.Session {
-  return client.session
 }
 
 func (client *MongoClientImpl) Insert(message *analytics.Message) error {
