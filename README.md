@@ -3,19 +3,19 @@ dp-search-monitoring
 
 ### Configuration
 
-| Environment variable  | Description
-| --------------------  | --------------------------------------
-| AWS_ACCESS_KEY_ID     | AWS access key.
-| AWS_SECRET_ACCESS_KEY | AWS secret access key.
-| AWS_REGION            | AWS region to use.
-| ANALYTICS_SQS_URL     | URL of SQS queue to use.
-| SQS_WAIT_TIMEOUT      | Timeout in seconds.
-| MONGODB_URL           | MongoDB URL.
-| MONGO_DB              | Database to use in MongoDB.
-| MONGO_COLLECTION      | Collection to use in MongoDB.
-| RUN_ON_STARTUP        | Boolean - whether to run import on startup.
-| TIME_UNIT             | Schedule one import per day (DAYS) or hour (HOURS).
-| AT_TIME               | Time to run job (when using TIME_UNIT='DAYS' only).
+| Environment variable  | Default          | Description
+| --------------------  | -----------------  -------------------------
+| AWS_ACCESS_KEY_ID     | N/A              | AWS access key.
+| AWS_SECRET_ACCESS_KEY | N/A              | AWS secret access key.
+| AWS_REGION            | N/A              | AWS region to use.
+| ANALYTICS_SQS_URL     | N/A              | URL of SQS queue to use.
+| SQS_WAIT_TIMEOUT      | 20               | Timeout in seconds.
+| MONGODB_URL           | localhost:27017  | MongoDB URL.
+| MONGO_DB              | local            | Database to use in MongoDB.
+| MONGO_COLLECTION      | searchstats      | Collection to use in MongoDB.
+| RUN_ON_STARTUP        | true             | (bool) Whether to run import on startup.
+| TIME_UNIT             | DAYS             | Schedule one import per day (DAYS) or hour (HOURS).
+| AT_TIME               | 00:00            | Time to run job (when using TIME_UNIT='DAYS' only).
 
 ### Licence
 
