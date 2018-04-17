@@ -3,11 +3,12 @@ package analytics
 import (
 	"encoding/json"
 
-	"github.com/aws/aws-sdk-go-v2/service/sqs/sqsiface"
-	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/aws/aws-sdk-go-v2/service/sqs/sqsiface"
 )
 
+// MockedReceiveMsgs mocks the reading of SQS messages for testing
 type MockedReceiveMsgs struct {
 	sqsiface.SQSAPI
 }
@@ -26,19 +27,24 @@ var messages = []Message{
 	},
 }
 
+// Mock the ReceiveMessageRequest method to return a single message
 func (m MockedReceiveMsgs) ReceiveMessageRequest(in *sqs.ReceiveMessageInput) sqs.ReceiveMessageRequest {
 	// Only need to return mocked response output
 
 	var output sqs.ReceiveMessageOutput
-    if len(messages) > 0 {
+
+	if len(messages) > 0 {
+		// Message hasn't been 'deleted', so add it to the response
 		message := messages[0]
 
+		// Marshall the message to JSON
 		body, err := json.Marshal(message)
 
 		if err != nil {
 			panic(err)
 		}
 
+		// Build the output message
 		output = sqs.ReceiveMessageOutput{
 			Messages: []sqs.Message{
 				{
@@ -48,10 +54,12 @@ func (m MockedReceiveMsgs) ReceiveMessageRequest(in *sqs.ReceiveMessageInput) sq
 			},
 		}
 	} else {
+		// Message has been 'deleted', so return an empty slice
 		output = sqs.ReceiveMessageOutput{
 			Messages: []sqs.Message{},
 		}
 	}
+	// Build and return the ReceiveMessageRequest
 	return sqs.ReceiveMessageRequest{
 		Request: &aws.Request{
 			Data: &output,
@@ -59,6 +67,7 @@ func (m MockedReceiveMsgs) ReceiveMessageRequest(in *sqs.ReceiveMessageInput) sq
 	}
 }
 
+// Mocks the DeleteMessageRequest method to set messages to nil (simulating the deletion of our only message)
 func (m MockedReceiveMsgs) DeleteMessageRequest(in *sqs.DeleteMessageInput) sqs.DeleteMessageRequest {
 	messages = nil
 	return sqs.DeleteMessageRequest{
@@ -68,6 +77,7 @@ func (m MockedReceiveMsgs) DeleteMessageRequest(in *sqs.DeleteMessageInput) sqs.
 	}
 }
 
+// Mocks the DeleteMessageBatchRequest method to set messages to nil (simulating the deletion of all messages)
 func (m MockedReceiveMsgs) DeleteMessageBatchRequest(in *sqs.DeleteMessageBatchInput) sqs.DeleteMessageBatchRequest {
 	messages = nil
 	return sqs.DeleteMessageBatchRequest{

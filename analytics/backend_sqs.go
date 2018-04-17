@@ -15,7 +15,7 @@ import (
 
 //go:generate moq -pkg analytics -out sqs_mocks.go . SQSReader
 
-// SQSReader defines a SQS Reader Interface
+// SQSReader defines an interface for reading messages from SQS
 type SQSReader interface {
 	GetAttributes() (*sqs.GetQueueAttributesOutput, error)
 	GetMessages(waitTimeout int64, maxNumberOfMessages int64) ([]Message, error)
@@ -32,23 +32,25 @@ type SQSReaderImpl struct {
 
 // Message is a concrete representation of the SQS message
 type Message struct {
-	Created string `json:"created"`
-	Url   string `json:"url"`
-	Term  string `json:"term"`
-	ListType string `json:listType`
-	GaID string `json:gaID`
-	GID string `json:gID`
-	PageIndex int `json:pageIndex`
-	LinkIndex int `json:linkIndex`
-	PageSize int `json:pageSize`
+	Created       string `json:"created"`
+	Url           string `json:"url"`
+	Term          string `json:"term"`
+	ListType      string `json:listType`
+	GaID          string `json:gaID`
+	GID           string `json:gID`
+	PageIndex     int    `json:pageIndex`
+	LinkIndex     int    `json:linkIndex`
+	PageSize      int    `json:pageSize`
 	receiptHandle string `json:receiptHandle`
 }
 
+// Set the receipt handle used to delete messages from SQS
 func (m *Message) SetReceiptHandle(receiptHandle string) {
 	m.receiptHandle = receiptHandle
 }
 
-func(m *Message) ReceiptHandle() string {
+// Get the receipt handle used to delete messages from SQS
+func (m *Message) ReceiptHandle() string {
 	return m.receiptHandle
 }
 
@@ -59,12 +61,12 @@ func GetReader() (*SQSReaderImpl, error) {
 
 	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {
-	  return nil, err
+		return nil, err
 	}
 
 	q = SQSReaderImpl{
-	  Client: sqs.New(cfg),
-	  URL:    config.SQSAnalyticsURL,
+		Client: sqs.New(cfg),
+		URL:    config.SQSAnalyticsURL,
 	}
 
 	return &q, nil
@@ -74,11 +76,13 @@ func GetReader() (*SQSReaderImpl, error) {
 func (q *SQSReaderImpl) GetAttributes() (*sqs.GetQueueAttributesOutput, error) {
 	// Returns the attributes for the desired Queue
 	params := sqs.GetQueueAttributesInput{
-		QueueUrl: aws.String(q.URL),
+		QueueUrl:       aws.String(q.URL),
 		AttributeNames: []sqs.QueueAttributeName{sqs.QueueAttributeNameAll},
 	}
 
+	// Generate the request
 	req := q.Client.GetQueueAttributesRequest(&params)
+	// Send the request
 	resp, err := req.Send()
 
 	if err != nil {
@@ -92,21 +96,25 @@ func (q *SQSReaderImpl) GetAttributes() (*sqs.GetQueueAttributesOutput, error) {
 // occurs that error will be returned.
 func (q *SQSReaderImpl) GetMessages(waitTimeout int64, maxNumberOfMessages int64) ([]Message, error) {
 	params := sqs.ReceiveMessageInput{
-		QueueUrl: aws.String(q.URL),
+		QueueUrl:            aws.String(q.URL),
 		MaxNumberOfMessages: &maxNumberOfMessages,
 	}
 
 	if waitTimeout > 0 {
+		// Poll for messages
 		params.WaitTimeSeconds = aws.Int64(waitTimeout)
 	}
 
+	// Generate the request
 	req := q.Client.ReceiveMessageRequest(&params)
+	// Send the request
 	resp, err := req.Send()
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get messages, %v", err)
 	}
 
+	// Unmarshall the SQS messages
 	msgs := make([]Message, len(resp.Messages))
 	for i, msg := range resp.Messages {
 		parsedMsg := Message{}
@@ -114,21 +122,24 @@ func (q *SQSReaderImpl) GetMessages(waitTimeout int64, maxNumberOfMessages int64
 			return nil, fmt.Errorf("failed to unmarshal message, %v", err)
 		}
 
-	  	// Add the ReceiptHandle
-	  	parsedMsg.SetReceiptHandle(*msg.ReceiptHandle)
+		// Add the ReceiptHandle
+		parsedMsg.SetReceiptHandle(*msg.ReceiptHandle)
 		msgs[i] = parsedMsg
 	}
 
 	return msgs, nil
 }
 
+// DeleteMessages deletes a single message from SQS using the message receipt handle
 func (q *SQSReaderImpl) DeleteMessage(receiptHandle string) (*sqs.DeleteMessageOutput, error) {
 	params := sqs.DeleteMessageInput{
-		QueueUrl: aws.String(q.URL),
+		QueueUrl:      aws.String(q.URL),
 		ReceiptHandle: aws.String(receiptHandle),
 	}
 
+	// Generate the request
 	req := q.Client.DeleteMessageRequest(&params)
+	// Send the request
 	resp, err := req.Send()
 
 	if err != nil {
@@ -138,22 +149,26 @@ func (q *SQSReaderImpl) DeleteMessage(receiptHandle string) (*sqs.DeleteMessageO
 	return resp, err
 }
 
+// BatchDeleteMessages deletes one or many message(s) from SQS using the message receipt handle(s)
 func (q *SQSReaderImpl) BatchDeleteMessages(receiptHandles []string) (*sqs.DeleteMessageBatchOutput, error) {
 	entries := make([]sqs.DeleteMessageBatchRequestEntry, len(receiptHandles))
 
+	// Generate list of sqs.DeleteMessageBatchRequestEntry using the message receipt handle(s)
 	for i, receiptHandle := range receiptHandles {
 		entries[i] = sqs.DeleteMessageBatchRequestEntry{
-			Id: aws.String(strconv.Itoa(i)),
+			Id:            aws.String(strconv.Itoa(i)),
 			ReceiptHandle: aws.String(receiptHandle),
 		}
 	}
 
 	params := sqs.DeleteMessageBatchInput{
-		Entries: entries,
+		Entries:  entries,
 		QueueUrl: aws.String(q.URL),
 	}
 
+	// DeleteMessages deletes a single message from SQS using the message receipt handle
 	req := q.Client.DeleteMessageBatchRequest(&params)
+	// Send the request
 	resp, err := req.Send()
 
 	if err != nil {

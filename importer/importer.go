@@ -12,7 +12,7 @@ type ImportClient interface {
 }
 
 func ImportSQSMessages(q analytics.SQSReader, c ImportClient) (int64, error) {
-	// Pulls a list of SQS messages into mongo and removes from the the queue
+	// Pulls a list of SQS messages, stores them, and removes from the the queue
 	var count int64
 
 	// Get initial batch of messages
@@ -21,12 +21,14 @@ func ImportSQSMessages(q analytics.SQSReader, c ImportClient) (int64, error) {
 		return count, err
 	}
 
+	// Loop over messages
 	for ok := len(msgs) > 0; ok; {
-		// Loop through the messages and insert into mongo
+		// Loop through the messages and insert into database
 		receiptHandles := make([]string, len(msgs))
 		for i := range msgs {
 			msg := msgs[i]
 
+			// Do the insert
 			err := c.Insert(&msg)
 
 			if err != nil {
@@ -38,7 +40,7 @@ func ImportSQSMessages(q analytics.SQSReader, c ImportClient) (int64, error) {
 			count++
 		}
 		log.Debug("Insert progress:", log.Data{
-			"total": count,
+			"total":       count,
 			"messageSize": len(msgs),
 		})
 
