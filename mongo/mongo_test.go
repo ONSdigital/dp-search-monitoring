@@ -5,6 +5,8 @@ import (
 	"github.com/ONSdigital/dp-search-monitoring/analytics"
 
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/ONSdigital/dp-search-monitoring/importer"
+	"github.com/ONSdigital/dp-search-monitoring/config"
 )
 
 var message = analytics.Message{
@@ -47,19 +49,23 @@ func TestMongoClientMock_Insert(t *testing.T) {
 }
 
 func TestPullMessages(t *testing.T) {
-	c := &MongoClientMock{}
-	c.InsertFunc = func(message *analytics.Message) error {
-		return nil
+	if config.SQSDeleteEnabled {
+		c := &MongoClientMock{}
+		c.InsertFunc = func(message *analytics.Message) error {
+			return nil
+		}
+
+		q := GetSQSClient()
+
+		count, err := importer.ImportSQSMessages(q, c)
+
+		Convey("Given a valid SQSReader and MongoClient", t, func() {
+			So(len(c.calls.Insert), ShouldEqual, 1)
+
+			So(count, ShouldEqual, 1)
+			So(err, ShouldBeNil)
+		})
+	} else {
+		t.Errorf("Deletion of SQS messages must be enabled!")
 	}
-
-	q := GetSQSClient()
-
-	count, err := PullMessages(q, c)
-
-	Convey("Given a valid SQSReader and MongoClient", t, func() {
-		So(len(c.calls.Insert), ShouldEqual, 1)
-
-		So(count, ShouldEqual, 1)
-		So(err, ShouldBeNil)
-	})
 }
