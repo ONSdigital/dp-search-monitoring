@@ -27,12 +27,12 @@ func (client *MongoClientImpl) Insert(message *analytics.Message) error {
 	return c.Insert(message)
 }
 
-func Import() {
+func Import() error {
 	q, err := analytics.GetReader()
 
 	if err != nil {
 		log.Error(err, nil)
-		return
+		return err
 	}
 
 	// Wraps ImportSQSMessages and logs any errors raised
@@ -41,14 +41,17 @@ func Import() {
 	client, err := NewMongoClient()
 	if err != nil {
 		log.Error(err, nil)
+		return err
 	}
 
 	count, err := importer.ImportSQSMessages(q, client)
 	if err != nil {
 		log.Error(err, nil)
+		return err
 	}
 
 	log.Debug("Insert complete", log.Data{
 		"total": count,
 	})
+	return nil
 }
