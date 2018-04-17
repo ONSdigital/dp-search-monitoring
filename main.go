@@ -84,7 +84,7 @@ func main() {
 	// Log the time of the next run
 	_, time := s.NextRun()
 	log.Debug("Cron job scheduled", log.Data{
-		"NextRun:": time,
+		"NextRun": time,
 	})
 
 	<-s.Start() // Start scheduler and block
