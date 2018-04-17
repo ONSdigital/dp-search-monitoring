@@ -13,8 +13,6 @@ import (
 	"github.com/ONSdigital/dp-search-monitoring/config"
 )
 
-//go:generate moq -pkg analytics -out sqs_mocks.go . SQSReader
-
 // SQSReader defines an interface for reading messages from SQS
 type SQSReader interface {
 	GetAttributes() (*sqs.GetQueueAttributesOutput, error)
