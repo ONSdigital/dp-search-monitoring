@@ -1,7 +1,7 @@
 package mongo
 
 import (
-	"gopkg.in/mgo.v2"
+	"github.com/globalsign/mgo"
 
 	"github.com/ONSdigital/dp-search-monitoring/analytics"
 	"github.com/ONSdigital/dp-search-monitoring/config"
