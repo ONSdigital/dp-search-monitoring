@@ -4,7 +4,7 @@ dp-search-monitoring
 ### Configuration
 
 | Environment variable  | Default          | Description
-| --------------------  | -----------------  -------------------------
+| --------------------  | ---------------- | -----------------------------------------------------
 | AWS_ACCESS_KEY_ID     | N/A              | AWS access key.
 | AWS_SECRET_ACCESS_KEY | N/A              | AWS secret access key.
 | AWS_REGION            | N/A              | AWS region to use.
