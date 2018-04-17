@@ -9,7 +9,7 @@ dp-search-monitoring
 | AWS_SECRET_ACCESS_KEY | String  | N/A              | AWS secret access key.
 | AWS_REGION            | String  | N/A              | AWS region to use.
 | ANALYTICS_SQS_URL     | String  | N/A              | URL of SQS queue to use.
-| SQS_WAIT_TIMEOUT      | int64   | 20               | Timeout in seconds.
+| SQS_WAIT_TIMEOUT      | int64   | 20               | Timeout in seconds (must be between 0 and 20).
 | MONGODB_URL           | String  | localhost:27017  | MongoDB URL.
 | MONGO_DB              | String  | local            | Database to use in MongoDB.
 | MONGO_COLLECTION      | String  | searchstats      | Collection to use in MongoDB.
