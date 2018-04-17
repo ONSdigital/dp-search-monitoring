@@ -76,6 +76,7 @@ func main() {
 		break
 	case "MINS":
 		s.Every(config.TimeWindow).Minutes().Do(mongo.Import)
+		break
 	default:
 		log.Debug("Unknown 'TIME_UNIT'.", log.Data{
 			"TimeUnit": config.TimeUnit,
