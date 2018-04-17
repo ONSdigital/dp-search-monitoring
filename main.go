@@ -82,7 +82,7 @@ func main() {
 	}
 
 	// Log the time of the next run
-	_, time := gocron.NextRun()
+	_, time := s.NextRun()
 	log.Debug("Cron job scheduled", log.Data{
 		"NextRun:": time,
 	})
