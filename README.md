@@ -4,7 +4,7 @@ dp-search-monitoring
 ### Configuration
 
 | Environment variable  | Type    | Default          | Description
-| --------------------  | ------- | ---------------- | ------------------------------------------------
+| --------------------  | ------- | ---------------- | ------------------------------------------------------------------
 | AWS_ACCESS_KEY_ID     | String  | N/A              | AWS access key.
 | AWS_SECRET_ACCESS_KEY | String  | N/A              | AWS secret access key.
 | AWS_REGION            | String  | N/A              | AWS region to use.
@@ -14,7 +14,8 @@ dp-search-monitoring
 | MONGO_DB              | String  | local            | Database to use in MongoDB.
 | MONGO_COLLECTION      | String  | searchstats      | Collection to use in MongoDB.
 | RUN_ON_STARTUP        | Boolean | true             | Run import on startup.
-| TIME_UNIT             | String  | DAYS             | Schedule one import per day (DAYS) or hour (HOURS).
+| TIME_UNIT             | String  | DAYS             | Schedule imports by day (DAYS), hour (HOURS) or minutes (MINS).
+| TIME_WINDOW           | uint64  | 1                | Time window for job to run (i.e every 'x' DAYS).
 | AT_TIME               | String  | 00:00            | Time to run job (when using TIME_UNIT='DAYS' only).
 
 ### Licence

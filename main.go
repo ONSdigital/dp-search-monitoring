@@ -54,6 +54,11 @@ func main() {
 		config.TimeUnit = v
 	}
 
+	if v := os.Getenv("TIME_WINDOW"); len(v) > 0 {
+		a, _ := strconv.Atoi(v)
+		config.TimeWindow = uint64(a)
+	}
+
 	if v := os.Getenv("AT_TIME"); len(v) > 0 {
 		config.AtTime = v
 	}
@@ -64,11 +69,13 @@ func main() {
 	// Schedule import by specified TimeUnit
 	switch config.TimeUnit {
 	case "DAYS":
-		s.Every(1).Day().At(config.AtTime).Do(mongo.Import)
+		s.Every(config.TimeWindow).Days().At(config.AtTime).Do(mongo.Import)
 		break
 	case "HOURS":
-		s.Every(1).Hour().Do(mongo.Import)
+		s.Every(config.TimeWindow).Hours().Do(mongo.Import)
 		break
+	case "MINS":
+		s.Every(config.TimeWindow).Minutes().Do(mongo.Import)
 	default:
 		log.Debug("Unknown 'TIME_UNIT'.", log.Data{
 			"TimeUnit": config.TimeUnit,
