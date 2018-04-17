@@ -18,7 +18,15 @@ func main() {
 	}
 
 	if v := os.Getenv("SQS_WAIT_TIMEOUT"); len(v) > 0 {
-		a, _ := strconv.Atoi(v)
+		a, err := strconv.Atoi(v)
+
+		if err != nil {
+			log.Debug("Unable to convert 'SQS_WAIT_TIMEOUT' val to int64", log.Data{
+				"Value": v,
+			})
+			os.Exit(1)
+		}
+
 		if a < 0 || a > 20 {
 			log.Debug("SQS_WAIT_TIMEOUT must be between 0 and 20", nil)
 			os.Exit(1)
@@ -43,7 +51,7 @@ func main() {
 
 		if err != nil {
 			log.Debug("Unable to convert 'RUN_ON_STARTUP' val to bool", log.Data{
-				"Value": val,
+				"Value": v,
 			})
 			os.Exit(1)
 		}
@@ -55,7 +63,15 @@ func main() {
 	}
 
 	if v := os.Getenv("TIME_WINDOW"); len(v) > 0 {
-		a, _ := strconv.Atoi(v)
+		a, err := strconv.Atoi(v)
+
+		if err != nil {
+			log.Debug("Unable to convert 'TIME_WINDOW' val to uint64", log.Data{
+				"Value": v,
+			})
+			os.Exit(1)
+		}
+
 		config.TimeWindow = uint64(a)
 	}
 
