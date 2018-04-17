@@ -10,6 +10,7 @@ dp-search-monitoring
 | AWS_REGION            | String  | N/A              | AWS region to use.
 | ANALYTICS_SQS_URL     | String  | N/A              | URL of SQS queue to use.
 | SQS_WAIT_TIMEOUT      | int64   | 20               | Timeout in seconds (must be between 0 and 20).
+| SQS_DELETE_ENABLED    | Boolean | false            | Specify if deletion of SQS messages is permitted.
 | MONGODB_URL           | String  | localhost:27017  | MongoDB URL.
 | MONGO_DB              | String  | local            | Database to use in MongoDB.
 | MONGO_COLLECTION      | String  | searchstats      | Collection to use in MongoDB.

@@ -34,6 +34,18 @@ func main() {
 		config.SQSWaitTimeout = int64(a)
 	}
 
+	if v := os.Getenv("SQS_DELETE_ENABLED"); len(v) > 0 {
+		val, err := strconv.ParseBool(v)
+
+		if err != nil {
+			log.Debug("Unable to convert 'SQS_DELETE_ENABLED' val to bool", log.Data{
+				"Value": v,
+			})
+			os.Exit(1)
+		}
+		config.SQSDeleteEnabled = val
+	}
+
 	if v := os.Getenv("MONGODB_URL"); len(v) > 0 {
 		config.MongoDBUrl = v
 	}
