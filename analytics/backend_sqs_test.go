@@ -9,7 +9,7 @@ import (
 // TestSQSReaderImpl_GetMessages tests that the SQSReaderImpl struct correctly interfaces with the (mocked) SQS
 // client
 func TestSQSReaderImpl_GetMessages(t *testing.T) {
-    // Get a handle on the Mocked SQS client interface
+	// Get a handle on the Mocked SQS client interface
 	client := MockedReceiveMsgs{}
 
 	// Initialise our SQSReaderImpl with a fake URL
@@ -28,7 +28,7 @@ func TestSQSReaderImpl_GetMessages(t *testing.T) {
 		So(messages, ShouldNotBeNil)
 		So(err, ShouldBeNil)
 
-        So(len(messages), ShouldEqual, 1)
+		So(len(messages), ShouldEqual, 1)
 		So(message.Created, ShouldEqual, "Now")
 		So(message.Url, ShouldEqual, "/test/url")
 		So(message.Term, ShouldEqual, "test_term")

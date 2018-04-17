@@ -7,6 +7,8 @@ import (
 	"github.com/ONSdigital/dp-search-monitoring/config"
 )
 
+//go:generate moq -pkg importer -out importer_mocks.go . ImportClient
+
 type ImportClient interface {
 	Insert(message *analytics.Message) error
 }

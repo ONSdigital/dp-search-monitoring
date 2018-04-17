@@ -1,11 +1,15 @@
 package log
 
 import (
+	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/mgutz/ansi"
@@ -16,6 +20,7 @@ var Namespace = "service-namespace"
 
 // HumanReadable, if true, outputs log events in a human readable format
 var HumanReadable bool
+var hrMutex sync.Mutex
 
 func init() {
 	configureHumanReadable()
@@ -43,14 +48,18 @@ func Handler(h http.Handler) http.Handler {
 		e := time.Now()
 		d := e.Sub(s)
 
-		Event("request", Context(req), Data{
+		data := Data{
 			"start":    s,
 			"end":      e,
 			"duration": d,
 			"status":   rc.statusCode,
 			"method":   req.Method,
 			"path":     req.URL.Path,
-		})
+		}
+		if len(req.URL.RawQuery) > 0 {
+			data["query"] = req.URL.Query()
+		}
+		Event("request", Context(req), data)
 	})
 }
 
@@ -68,6 +77,13 @@ func (r *responseCapture) Flush() {
 	if f, ok := r.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
 	}
+}
+
+func (r *responseCapture) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if h, ok := r.ResponseWriter.(http.Hijacker); ok {
+		return h.Hijack()
+	}
+	return nil, nil, errors.New("log: response does not implement http.Hijacker")
 }
 
 // Event records an event
@@ -96,13 +112,24 @@ func event(name string, context string, data Data) {
 	b, err := json.Marshal(&m)
 	if err != nil {
 		// This should never happen
-		// FIXME: not sure what we should do here
+		// We'll log the error (which for our purposes, can't fail), which
+		// gives us an indication we have something to investigate
+		b, _ = json.Marshal(map[string]interface{}{
+			"created":   time.Now(),
+			"event":     "log_error",
+			"namespace": Namespace,
+			"context":   context,
+			"data":      map[string]interface{}{"error": err.Error()},
+		})
 	}
 
 	fmt.Fprintf(os.Stdout, "%s\n", b)
 }
 
 func printHumanReadable(name, context string, data Data, m map[string]interface{}) {
+	hrMutex.Lock()
+	defer hrMutex.Unlock()
+
 	ctx := ""
 	if len(context) > 0 {
 		ctx = "[" + context + "] "
@@ -122,6 +149,8 @@ func printHumanReadable(name, context string, data Data, m map[string]interface{
 	switch name {
 	case "error":
 		col = ansi.LightRed
+	case "info":
+		col = ansi.LightCyan
 	case "trace":
 		col = ansi.Blue
 	case "debug":
@@ -200,4 +229,25 @@ func TraceR(req *http.Request, message string, data Data) {
 // Trace is a structured trace message
 func Trace(message string, data Data) {
 	TraceC("", message, data)
+}
+
+// InfoC is a structured info message with context
+func InfoC(context string, message string, data Data) {
+	if data == nil {
+		data = Data{}
+	}
+	if _, ok := data["message"]; !ok {
+		data["message"] = message
+	}
+	Event("info", context, data)
+}
+
+// InfoR is a structured info message for a request
+func InfoR(req *http.Request, message string, data Data) {
+	InfoC(Context(req), message, data)
+}
+
+// Info is a structured info message
+func Info(message string, data Data) {
+	InfoC("", message, data)
 }

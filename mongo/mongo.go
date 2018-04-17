@@ -9,8 +9,6 @@ import (
 	"github.com/ONSdigital/go-ns/log"
 )
 
-//go:generate moq -pkg mongo -out mongo_mocks.go . MongoClient
-
 type MongoClientImpl struct {
 	session *mgo.Session
 }
