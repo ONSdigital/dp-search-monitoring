@@ -21,3 +21,15 @@ var TimeUnit = "DAYS"
 var TimeWindow uint64 = 1
 
 var AtTime = "00:00"
+
+var Importer = "MONGO"
+
+// RDS
+
+var IamArn = ""
+
+var RdsDbUser = ""
+
+var RdsDbName = ""
+
+var RdsDbEndpoint = ""

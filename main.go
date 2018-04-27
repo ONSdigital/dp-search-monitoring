@@ -8,11 +8,17 @@ import (
 
 	"github.com/ONSdigital/dp-search-monitoring/config"
 	"github.com/ONSdigital/dp-search-monitoring/mongo"
+	"github.com/ONSdigital/dp-search-monitoring/rds"
 	"github.com/ONSdigital/go-ns/log"
+	"github.com/ONSdigital/dp-search-monitoring/importer"
 )
 
 func main() {
 	// Setup config
+	if v := os.Getenv("IMPORTER"); len(v) > 0 {
+		config.Importer = v
+	}
+
 	if v := os.Getenv("ANALYTICS_SQS_URL"); len(v) > 0 {
 		config.SQSAnalyticsURL = v
 	}
@@ -94,16 +100,37 @@ func main() {
 	// Setup cron job to poll for SQS messages and insert into mongoDB
 	s := gocron.NewScheduler()
 
+	var i importer.ImportClient
+	var err error
+
+	switch config.Importer {
+	case "MONGO":
+		i, err = mongo.New()
+		break
+	case "RDS_SQL":
+		i, err = rds.New()
+		break
+	default:
+		log.Debug("Unknown 'IMPORTER'.", log.Data{
+			"Importer": config.Importer,
+		})
+		os.Exit(1)
+	}
+
+	if err != nil {
+		panic(err)
+	}
+
 	// Schedule import by specified TimeUnit
 	switch config.TimeUnit {
 	case "DAYS":
-		s.Every(config.TimeWindow).Days().At(config.AtTime).Do(mongo.Import)
+		s.Every(config.TimeWindow).Days().At(config.AtTime).Do(importer.Import, i)
 		break
 	case "HOURS":
-		s.Every(config.TimeWindow).Hours().Do(mongo.Import)
+		s.Every(config.TimeWindow).Hours().Do(importer.Import, i)
 		break
 	case "MINS":
-		s.Every(config.TimeWindow).Minutes().Do(mongo.Import)
+		s.Every(config.TimeWindow).Minutes().Do(importer.Import, i)
 		break
 	default:
 		log.Debug("Unknown 'TIME_UNIT'.", log.Data{

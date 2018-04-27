@@ -11,6 +11,32 @@ import (
 
 type ImportClient interface {
 	Insert(message *analytics.Message) error
+	Close()
+}
+
+func Import(c ImportClient) error {
+	q, err := analytics.GetReader()
+
+	if err != nil {
+		log.Error(err, nil)
+		return err
+	}
+
+	// Wraps ImportSQSMessages and logs any errors raised
+	log.Debug("Starting import.", nil)
+
+	defer c.Close()
+
+	count, err := ImportSQSMessages(q, c)
+	if err != nil {
+		log.Error(err, nil)
+		return err
+	}
+
+	log.Debug("Insert complete", log.Data{
+		"total": count,
+	})
+	return nil
 }
 
 func ImportSQSMessages(q analytics.SQSReader, c ImportClient) (int64, error) {
