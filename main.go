@@ -15,8 +15,8 @@ import (
 
 func main() {
 	// Setup config
-	if v := os.Getenv("IMPORTER"); len(v) > 0 {
-		config.Importer = v
+	if v := os.Getenv("BACKEND"); len(v) > 0 {
+		config.Backend = v
 	}
 
 	if v := os.Getenv("ANALYTICS_SQS_URL"); len(v) > 0 {
@@ -52,18 +52,6 @@ func main() {
 		config.SQSDeleteEnabled = val
 	}
 
-	if v := os.Getenv("MONGODB_URL"); len(v) > 0 {
-		config.MongoDBUrl = v
-	}
-
-	if v := os.Getenv("MONGO_DB"); len(v) > 0 {
-		config.MongoDBDatabase = v
-	}
-
-	if v := os.Getenv("MONGO_COLLECTION"); len(v) > 0 {
-		config.MongoDBCollection = v
-	}
-
 	if v := os.Getenv("RUN_ON_STARTUP"); len(v) > 0 {
 		val, err := strconv.ParseBool(v)
 
@@ -96,23 +84,77 @@ func main() {
 	if v := os.Getenv("AT_TIME"); len(v) > 0 {
 		config.AtTime = v
 	}
+	// End config setup
 
-	// Setup cron job to poll for SQS messages and insert into mongoDB
-	s := gocron.NewScheduler()
-
+	// Setup configured import client
 	var i importer.ImportClient
 	var err error
 
-	switch config.Importer {
+	switch config.Backend {
 	case "MONGO":
+		// mongoDB config options
+		if v := os.Getenv("MONGODB_URL"); len(v) > 0 {
+			config.MongoDBUrl = v
+		}
+
+		if v := os.Getenv("MONGO_DB"); len(v) > 0 {
+			config.MongoDBDatabase = v
+		}
+
+		if v := os.Getenv("MONGO_COLLECTION"); len(v) > 0 {
+			config.MongoDBCollection = v
+		}
+
 		i, err = mongo.New()
 		break
-	case "RDS_SQL":
+	case "RDS_POSTGRES":
+		// Get mandatory RDS config options
+		if v := os.Getenv("RDS_DB_USERNAME"); len(v) > 0 {
+			config.RdsDbUser = v
+		} else {
+			log.Debug("RDS_DB_USERNAME not supplied", nil)
+			os.Exit(1)
+		}
+
+		if v := os.Getenv("RDS_DB_PASSWORD"); len(v) > 0 {
+			config.RdsDbPassword = v
+		} else {
+			log.Debug("RDS_DB_PASSWORD not supplied", nil)
+			os.Exit(1)
+		}
+
+		if v := os.Getenv("RDS_DB_NAME"); len(v) > 0 {
+			config.RdsDbName = v
+		} else {
+			log.Debug("RDS_DB_NAME not supplied", nil)
+			os.Exit(1)
+		}
+
+		if v := os.Getenv("RDS_DB_ENDPOINT"); len(v) > 0 {
+			config.RdsDbEndpoint = v
+		} else {
+			log.Debug("RDS_DB_ENDPOINT not supplied", nil)
+			os.Exit(1)
+		}
+
+		if v := os.Getenv("RDS_PORT"); len(v) > 0 {
+			a, err := strconv.Atoi(v)
+
+			if err != nil {
+				log.Debug("Unable to convert 'RDS_PORT' val to int64", log.Data{
+					"Value": v,
+				})
+				os.Exit(1)
+			}
+
+			config.RdsDbPort = int64(a)
+		}
+
 		i, err = rds.New()
 		break
 	default:
-		log.Debug("Unknown 'IMPORTER'.", log.Data{
-			"Importer": config.Importer,
+		log.Debug("Unknown 'BACKEND'.", log.Data{
+			"Importer": config.Backend,
 		})
 		os.Exit(1)
 	}
@@ -120,6 +162,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	// Setup cron job to poll for SQS messages and store using about importer
+	s := gocron.NewScheduler()
 
 	// Schedule import by specified TimeUnit
 	switch config.TimeUnit {

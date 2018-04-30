@@ -22,14 +22,16 @@ var TimeWindow uint64 = 1
 
 var AtTime = "00:00"
 
-var Importer = "MONGO"
+var Backend = "RDS_POSTGRES"
 
 // RDS
 
-var IamArn = ""
-
 var RdsDbUser = ""
+
+var RdsDbPassword = ""
 
 var RdsDbName = ""
 
 var RdsDbEndpoint = ""
+
+var RdsDbPort int64 = 5432  // Default postgres port

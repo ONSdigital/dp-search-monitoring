@@ -3,44 +3,37 @@ package analytics
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/service/rds"
-	"github.com/aws/aws-sdk-go-v2/aws/external"
-	"github.com/aws/aws-sdk-go-v2/service/rds/rdsutils"
 	"github.com/ONSdigital/dp-search-monitoring/config"
 
 	"database/sql"
-	"github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	"github.com/ONSdigital/go-ns/log"
 )
 
-func MySQLDriver() (*mysql.MySQLDriver, error) {
-	cfg, err := external.LoadDefaultAWSConfig()
+// mysqlDB messages books to a MySQL instance.
+type MySqlDB struct {
+	Conn *sql.DB
+}
+
+func MySQLDriver() (*sql.DB, error) {
+
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%d sslmode=disable",
+				config.RdsDbUser, config.RdsDbPassword, config.RdsDbName, config.RdsDbEndpoint, config.RdsDbPort)
+
+	conn, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
 	}
 
-	// Init RDS client
-	r := rds.New(cfg)
-
-	// Get credentials
-	c := r.Credentials
-
-	// Build auth token
-	authToken, err := rdsutils.BuildAuthToken(config.RdsDbEndpoint, cfg.Region, config.RdsDbUser, c)
+	// Open doesn't open a connection. Validate DSN data:
+	err = conn.Ping()
 	if err != nil {
 		return nil, err
 	}
 
-	// Create the MySQL DNS string for the DB connection
-	// user:password@protocol(endpoint)/dbname?<params>
-	dnsStr := fmt.Sprintf("%s:%s@tcp(%s)/%s?tls=true",
-		config.RdsDbUser, authToken, config.RdsDbEndpoint, config.RdsDbName,
-	)
+	log.Debug("Successfully made connection to postgres DB", log.Data{
+		"dbName": config.RdsDbName,
+	})
 
-	driver := mysql.MySQLDriver{}
-	// Use db to perform SQL operations on database
-	if _, err = sql.Open("mysql", dnsStr); err != nil {
-		panic(err)
-	}
-
-	return &driver, err
+	return conn, nil
 }
