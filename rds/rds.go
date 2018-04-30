@@ -1,11 +1,9 @@
 package rds
 
 import (
-	"github.com/ONSdigital/dp-search-monitoring/analytics"
-	"github.com/ONSdigital/go-ns/log"
-
-	_ "database/sql/driver"
 	"database/sql"
+	
+	"github.com/ONSdigital/dp-search-monitoring/analytics"
 )
 
 type RdsSQLClient struct {
