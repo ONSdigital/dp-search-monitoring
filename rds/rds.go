@@ -50,19 +50,6 @@ func (client *RdsSQLClient) Insert(message *analytics.Message) error {
 		return err
 	}
 
-	log.Debug("Got message", log.Data{
-		"Created": message.Created,
-		"Url": message.Url,
-		"Term": message.Term,
-		"ListType": message.ListType,
-		"GaID": message.GaID,
-		"GID": message.GID,
-		"PageIndex": message.PageIndex,
-		"LinkIndex": message.LinkIndex,
-		"PageSize": message.PageSize,
-		"ReceiptHandle": message.ReceiptHandle(),
-	})
-
 	return nil
 }
 
