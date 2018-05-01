@@ -10,10 +10,6 @@ import (
 	"github.com/ONSdigital/go-ns/log"
 )
 
-// mysqlDB messages books to a MySQL instance.
-type mySqlDB struct {
-	Conn *sql.DB
-}
 
 func MySQLDriver() (*sql.DB, error) {
 
