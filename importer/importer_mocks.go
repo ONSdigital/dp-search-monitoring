@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	lockImportClientMockClose  sync.RWMutex
 	lockImportClientMockInsert sync.RWMutex
 )
 
@@ -18,6 +19,9 @@ var (
 //
 //         // make and configure a mocked ImportClient
 //         mockedImportClient := &ImportClientMock{
+//             CloseFunc: func()  {
+// 	               panic("TODO: mock out the Close method")
+//             },
 //             InsertFunc: func(message *analytics.Message) error {
 // 	               panic("TODO: mock out the Insert method")
 //             },
@@ -28,17 +32,49 @@ var (
 //
 //     }
 type ImportClientMock struct {
+	// CloseFunc mocks the Close method.
+	CloseFunc func()
+
 	// InsertFunc mocks the Insert method.
 	InsertFunc func(message *analytics.Message) error
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// Close holds details about calls to the Close method.
+		Close []struct {
+		}
 		// Insert holds details about calls to the Insert method.
 		Insert []struct {
 			// Message is the message argument value.
 			Message *analytics.Message
 		}
 	}
+}
+
+// Close calls CloseFunc.
+func (mock *ImportClientMock) Close() {
+	if mock.CloseFunc == nil {
+		panic("moq: ImportClientMock.CloseFunc is nil but ImportClient.Close was just called")
+	}
+	callInfo := struct {
+	}{}
+	lockImportClientMockClose.Lock()
+	mock.calls.Close = append(mock.calls.Close, callInfo)
+	lockImportClientMockClose.Unlock()
+	mock.CloseFunc()
+}
+
+// CloseCalls gets all the calls that were made to Close.
+// Check the length with:
+//     len(mockedImportClient.CloseCalls())
+func (mock *ImportClientMock) CloseCalls() []struct {
+} {
+	var calls []struct {
+	}
+	lockImportClientMockClose.RLock()
+	calls = mock.calls.Close
+	lockImportClientMockClose.RUnlock()
+	return calls
 }
 
 // Insert calls InsertFunc.
