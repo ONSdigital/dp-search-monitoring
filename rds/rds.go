@@ -2,7 +2,7 @@ package rds
 
 import (
 	"database/sql"
-	
+
 	"github.com/ONSdigital/dp-search-monitoring/analytics"
 )
 
@@ -11,7 +11,7 @@ type RdsSQLClient struct {
 }
 
 func New() (*RdsSQLClient, error) {
-	db, err := analytics.MySQLDriver()
+	db, err := MySQLDriver()
 	if err != nil {
 		return nil, err
 	}

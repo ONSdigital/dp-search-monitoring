@@ -1,4 +1,4 @@
-package analytics
+package rds
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 )
 
 // mysqlDB messages books to a MySQL instance.
-type MySqlDB struct {
+type mySqlDB struct {
 	Conn *sql.DB
 }
 

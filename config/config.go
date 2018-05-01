@@ -1,18 +1,8 @@
 package config
 
-var SQSAnalyticsURL = ""
+var Verbose = true  // Enable logging of events
 
-var SQSWaitTimeout int64 = 20
-
-var MaxSQSMessages int64 = 10
-
-var SQSDeleteEnabled = false
-
-var MongoDBUrl = "localhost:27017"
-
-var MongoDBDatabase = "local"
-
-var MongoDBCollection = "searchstats"
+var SuperVerbose = false  // Enable logging of low-priority messages (i.e batch delete responses)
 
 var RunAllOnStartup = true
 
@@ -23,15 +13,3 @@ var TimeWindow uint64 = 1
 var AtTime = "00:00"
 
 var Backend = "RDS_POSTGRES"
-
-// RDS
-
-var RdsDbUser = ""
-
-var RdsDbPassword = ""
-
-var RdsDbName = ""
-
-var RdsDbEndpoint = ""
-
-var RdsDbPort int64 = 5432  // Default postgres port
