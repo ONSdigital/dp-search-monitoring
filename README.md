@@ -38,6 +38,7 @@ dp-search-monitoring
 | RDS_DB_PASSWORD       | String  | N/A              | Postgres DB password.
 | RDS_DB_NAME           | String  | N/A              | Postgres DB name.
 | RDS_DB_ENDPOINT       | String  | N/A              | AWS Endpoint of Postgres DB.
+| RDS_DB_TABLE          | String  | messages         | The table to insert SQS messages into.
 | RDS_PORT              | int     | 5432             | Port to connect to.
 
 ### Licence

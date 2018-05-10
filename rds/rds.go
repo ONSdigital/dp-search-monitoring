@@ -4,6 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/ONSdigital/dp-search-monitoring/analytics"
+	"fmt"
+	"github.com/ONSdigital/dp-search-monitoring/config"
 )
 
 type RdsSQLClient struct {
@@ -32,8 +34,9 @@ func New() (*RdsSQLClient, error) {
 
 func (client *RdsSQLClient) Insert(message *analytics.Message) error {
 
-	stmt, err := client.db.Prepare(
-		"INSERT INTO messages (created, url, term, listType, gaID, gID, pageIndex, linkIndex, pageSize) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)")
+	query := fmt.Sprintf("INSERT INTO %s (created, url, term, listType, gaID, gID, pageIndex, linkIndex, pageSize) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)", config.RdsDbTable)
+
+	stmt, err := client.db.Prepare(query)
 
 	if err != nil {
 		return err

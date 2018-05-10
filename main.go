@@ -130,6 +130,10 @@ func main() {
 			os.Exit(1)
 		}
 
+		if v := os.Getenv("RDS_DB_TABLE"); len(v) > 0 {
+			config.RdsDbTable = v
+		}
+
 		if v := os.Getenv("RDS_PORT"); len(v) > 0 {
 			a, err := strconv.Atoi(v)
 
