@@ -110,7 +110,7 @@ func ImportSQSMessages(q analytics.SQSReader, c ImportClient) (int64, error) {
 				return count, err
 			}
 
-			if config.Verbose || config.SuperVerbose {
+			if config.Verbose && config.SuperVerbose {
 				log.Debug("Got BatchDeleteResponse", log.Data{
 					"response": resp,
 				})
