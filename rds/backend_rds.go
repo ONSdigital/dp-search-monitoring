@@ -10,6 +10,30 @@ import (
 	"github.com/ONSdigital/go-ns/log"
 )
 
+var createTableStatements = []string{
+	fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+		created date NOT NULL,
+		url text NOT NULL,
+		term text NOT NULL,
+		listType text NOT NULL,
+		gaID text NOT NULL,
+		gID text NOT NULL,
+		pageIndex integer NOT NULL,
+		linkIndex integer NOT NULL,
+		pageSize integer NOT NULL
+	)`, config.RdsDbTable),
+}
+
+// createTable creates the table
+func createTable(conn *sql.DB) error {
+	for _, stmt := range createTableStatements {
+		_, err := conn.Exec(stmt)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func MySQLDriver() (*sql.DB, error) {
 
@@ -30,6 +54,12 @@ func MySQLDriver() (*sql.DB, error) {
 	log.Debug("Successfully made connection to postgres DB", log.Data{
 		"dbName": config.RdsDbName,
 	})
+
+	// Create table, if necessary
+	err = createTable(conn)
+	if err != nil {
+		return nil, err
+	}
 
 	return conn, nil
 }
