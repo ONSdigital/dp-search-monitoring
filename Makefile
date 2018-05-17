@@ -9,6 +9,10 @@ debug: generate
 
 generate: ${GOPATH}/bin/go-bindata
 
+package:
+	gox -osarch="linux/amd64" -output="dp_search_monitoring_linux_amd64"
+	zip dp-search-monitoring.zip dp_search_monitoring_linux_amd64 Dockerfile
+
 test:
 	go test -tags 'production' ./...
 
