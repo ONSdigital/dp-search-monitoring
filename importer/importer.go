@@ -7,6 +7,7 @@ import (
 	"github.com/ONSdigital/dp-search-monitoring/config"
 	"github.com/ONSdigital/dp-search-monitoring/mongo"
 	"github.com/ONSdigital/dp-search-monitoring/rds"
+	"os"
 )
 
 //go:generate moq -pkg importer -out importer_mocks.go . ImportClient
@@ -44,12 +45,12 @@ func Import() error {
 
 	c, err := getConfiguredImportClient()
 
+	defer c.Close()
+
 	if err != nil {
 		log.Error(err, nil)
-		return err
+		os.Exit(1)
 	}
-
-	defer c.Close()
 
 	// Wraps ImportSQSMessages and logs any errors raised
 	log.Debug("Starting import.", nil)
